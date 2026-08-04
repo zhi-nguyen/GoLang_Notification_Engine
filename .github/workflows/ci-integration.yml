@@ -29,7 +29,7 @@ jobs:
 
       - name: Run Go Unit & Integration Tests in Docker
         run: |
-          docker run --rm -v ${{ github.workspace }}/backend:/app -w /app golang:1.22-alpine go test ./... -v -race
+          docker run --rm -v ${{ github.workspace }}/backend:/app -w /app golang:1.22 go test ./... -v -race
 
       - name: Build Backend Docker Image
         run: |
