@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"context"
 	"time"
 )
 
@@ -51,9 +50,9 @@ type Notification struct {
 }
 
 type SendRequest struct {
-	Title    string             `json:"title"`
-	Body     string             `json:"body"`
-	Type     NotificationType   `json:"type"`
-	Channels []string           `json:"channels"`
-	Target   TargetConfig       `json:"target"`
+	Title    string           `json:"title"`
+	Body     string           `json:"body"`
+	Type     NotificationType `json:"type"`
+	Channels []string         `json:"channels"`
+	Target   TargetConfig     `json:"target"`
 }
