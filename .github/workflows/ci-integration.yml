@@ -1,0 +1,41 @@
+name: CI Integration & Automation Tests
+
+on:
+  push:
+    branches: [ main, staging, dev, 'phase-*/*', 'feature/*', 'fix/*' ]
+  pull_request:
+    branches: [ main, staging, dev ]
+
+jobs:
+  integration-test:
+    name: Integration & Docker Automation Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Start Services via Docker Compose
+        run: |
+          docker compose up -d nats postgres
+
+      - name: Wait for Database & NATS Health
+        run: |
+          echo "Waiting for NATS and PostgreSQL to be ready..."
+          sleep 5
+          docker compose ps
+
+      - name: Run Go Unit & Integration Tests in Docker
+        run: |
+          docker run --rm -v ${{ github.workspace }}/backend:/app -w /app golang:1.22-alpine go test ./... -v -race
+
+      - name: Build Backend Docker Image
+        run: |
+          docker compose build backend
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker compose down -v
