@@ -7,12 +7,17 @@ import (
 )
 
 // NewRouter sets up all HTTP routes and middleware.
-func NewRouter(h *HTTPHandler, jwtMgr *auth.JWTManager) http.Handler {
+func NewRouter(h *HTTPHandler, jwtMgr *auth.JWTManager, wsHandler http.Handler) http.Handler {
 	mux := http.NewServeMux()
 
 	// Public Endpoints
 	mux.HandleFunc("GET /health", h.HealthCheck)
 	mux.HandleFunc("POST /api/v1/auth/token", h.GenerateToken)
+
+	// WebSocket Endpoint (token checked internally by wsHandler)
+	if wsHandler != nil {
+		mux.Handle("GET /ws", wsHandler)
+	}
 
 	// Protected Endpoints
 	authMiddleware := JWTAuthMiddleware(jwtMgr)

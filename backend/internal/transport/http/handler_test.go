@@ -70,7 +70,7 @@ func setupTestServer(t *testing.T) (*mockUsecase, *auth.JWTManager, http.Handler
 
 	uc := new(mockUsecase)
 	handler := NewHTTPHandler(uc, jwtMgr)
-	router := NewRouter(handler, jwtMgr)
+	router := NewRouter(handler, jwtMgr, nil)
 
 	return uc, jwtMgr, router, token
 }
