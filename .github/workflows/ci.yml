@@ -1,0 +1,71 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, staging, dev, 'phase-*/*', 'feature/*', 'fix/*' ]
+  pull_request:
+    branches: [ main, staging, dev ]
+
+jobs:
+  lint:
+    name: Lint Go Code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache-dependency-path: backend/go.sum
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.56.2
+          working-directory: backend
+          args: --timeout=5m
+        continue-on-error: true
+
+  test:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache-dependency-path: backend/go.sum
+
+      - name: Test
+        run: |
+          if [ -d "backend" ] && [ -f "backend/go.mod" ]; then
+            cd backend && go test -v -race -coverprofile=coverage.out ./...
+          else
+            echo "No Go backend modules found yet. Skipping test."
+          fi
+
+  build:
+    name: Build Verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache-dependency-path: backend/go.sum
+
+      - name: Build
+        run: |
+          if [ -f "backend/cmd/server/main.go" ]; then
+            cd backend && go build -v ./cmd/server
+          else
+            echo "Main package not created yet. Skipping build."
+          fi

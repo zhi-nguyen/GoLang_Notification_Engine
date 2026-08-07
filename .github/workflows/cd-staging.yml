@@ -1,0 +1,25 @@
+name: CD Pipeline - Staging
+
+on:
+  push:
+    branches: [ staging, main ]
+
+jobs:
+  build-and-deploy:
+    name: Build & Deploy to Staging
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Backend Image
+        run: |
+          docker build -t gonotification-backend:staging -f Dockerfile.backend .
+
+      - name: Deploy Placeholder
+        run: |
+          echo "Deploying to Staging environment..."
+          echo "Integration testing placeholder - ready for Kubernetes/ECS deployment."
