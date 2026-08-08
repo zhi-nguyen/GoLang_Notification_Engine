@@ -44,36 +44,57 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
   const [reconnectCount, setReconnectCount] = useState<number>(0);
 
   const socketRef = useRef<WebSocket | null>(null);
-  const reconnectTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isManuallyClosedRef = useRef<boolean>(false);
+  const reconnectCountRef = useRef<number>(0);
 
-  const updateStatus = useCallback(
-    (newStatus: ConnectionStatus) => {
-      setStatus(newStatus);
-      if (onStatusChange) onStatusChange(newStatus);
-    },
-    [onStatusChange]
-  );
+  // Keep refs updated for stable callbacks
+  const tokenRef = useRef(token);
+  tokenRef.current = token;
+
+  const urlRef = useRef(url);
+  urlRef.current = url;
+
+  const onMessageRef = useRef(onMessage);
+  onMessageRef.current = onMessage;
+
+  const onStatusChangeRef = useRef(onStatusChange);
+  onStatusChangeRef.current = onStatusChange;
+
+  const updateStatus = useCallback((newStatus: ConnectionStatus) => {
+    setStatus(newStatus);
+    if (onStatusChangeRef.current) {
+      onStatusChangeRef.current(newStatus);
+    }
+  }, []);
 
   const connect = useCallback(() => {
-    if (!token) {
+    const currentToken = tokenRef.current;
+    const currentUrl = urlRef.current;
+
+    if (!currentToken) {
       updateStatus('FAILED');
       return;
     }
 
-    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      return; // Already connected
+    if (
+      socketRef.current &&
+      (socketRef.current.readyState === WebSocket.OPEN ||
+        socketRef.current.readyState === WebSocket.CONNECTING)
+    ) {
+      return; // Already connecting or connected
     }
 
     isManuallyClosedRef.current = false;
-    updateStatus(reconnectCount > 0 ? 'RECONNECTING' : 'CONNECTING');
+    updateStatus(reconnectCountRef.current > 0 ? 'RECONNECTING' : 'CONNECTING');
 
-    const wsUrl = `${url}?token=${encodeURIComponent(token)}`;
+    const wsUrl = `${currentUrl}?token=${encodeURIComponent(currentToken)}`;
     const ws = new WebSocket(wsUrl);
     socketRef.current = ws;
 
     ws.onopen = () => {
       updateStatus('CONNECTED');
+      reconnectCountRef.current = 0;
       setReconnectCount(0);
     };
 
@@ -94,10 +115,10 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
       };
 
       setLastMessage(receivedMsg);
-      setMessageLogs((prev) => [receivedMsg, ...prev.slice(0, 49)]); // Keep last 50 logs
+      setMessageLogs((prev) => [receivedMsg, ...prev.slice(0, 49)]);
 
-      if (onMessage) {
-        onMessage(parsedData);
+      if (onMessageRef.current) {
+        onMessageRef.current(parsedData);
       }
     };
 
@@ -113,31 +134,23 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
         return;
       }
 
-      if (reconnectCount < maxReconnectAttempts) {
+      if (reconnectCountRef.current < maxReconnectAttempts) {
         updateStatus('RECONNECTING');
-        // Exponential backoff with jitter
         const delay = Math.min(
-          reconnectInterval * Math.pow(1.5, reconnectCount) + Math.random() * 500,
+          reconnectInterval * Math.pow(1.5, reconnectCountRef.current) + Math.random() * 500,
           10000
         );
 
         reconnectTimerRef.current = setTimeout(() => {
-          setReconnectCount((prev) => prev + 1);
+          reconnectCountRef.current += 1;
+          setReconnectCount(reconnectCountRef.current);
           connect();
         }, delay);
       } else {
         updateStatus('FAILED');
       }
     };
-  }, [
-    token,
-    url,
-    reconnectCount,
-    maxReconnectAttempts,
-    reconnectInterval,
-    onMessage,
-    updateStatus,
-  ]);
+  }, [updateStatus, maxReconnectAttempts, reconnectInterval]);
 
   const disconnect = useCallback(() => {
     isManuallyClosedRef.current = true;
@@ -174,9 +187,10 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
       if (socketRef.current) {
         isManuallyClosedRef.current = true;
         socketRef.current.close();
+        socketRef.current = null;
       }
     };
-  }, [autoConnect, token]);
+  }, [autoConnect, token, connect]);
 
   return {
     status,
