@@ -1,8 +1,11 @@
 package http
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
+	"fmt"
+	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -18,7 +21,7 @@ const (
 	UserIDKey contextKey = "user_id"
 )
 
-// ResponseWriter wrapper to capture status code
+// ResponseWriter wrapper to capture status code while preserving http.Hijacker & http.Flusher
 type responseWriter struct {
 	http.ResponseWriter
 	statusCode int
@@ -27,6 +30,19 @@ type responseWriter struct {
 func (rw *responseWriter) WriteHeader(code int) {
 	rw.statusCode = code
 	rw.ResponseWriter.WriteHeader(code)
+}
+
+func (rw *responseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	if hj, ok := rw.ResponseWriter.(http.Hijacker); ok {
+		return hj.Hijack()
+	}
+	return nil, nil, fmt.Errorf("underlying ResponseWriter does not implement http.Hijacker")
+}
+
+func (rw *responseWriter) Flush() {
+	if f, ok := rw.ResponseWriter.(http.Flusher); ok {
+		f.Flush()
+	}
 }
 
 // CORSMiddleware handles Cross-Origin Resource Sharing.
