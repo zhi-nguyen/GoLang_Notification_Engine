@@ -1,122 +1,165 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import React, { useState } from 'react';
+import { NotificationProvider, useNotificationContext } from './context/NotificationContext';
+import { NotificationBell } from './components/NotificationBell';
+import { ToastContainer } from './components/ToastContainer';
+import { MultiClientSandbox } from './components/MultiClientSandbox';
+import { BroadcastForm } from './components/BroadcastForm';
+import { NotificationList } from './components/NotificationList';
+import { Radio, Send, History, Cpu, Zap, Database, Server, CheckCircle2 } from 'lucide-react';
 
-function App() {
-  const [count, setCount] = useState(0)
+const DashboardContent: React.FC = () => {
+  const { wsStatus, userId, setUserId } = useNotificationContext();
+  const [activeTab, setActiveTab] = useState<'sandbox' | 'dispatch' | 'history'>('sandbox');
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="min-h-screen flex flex-col">
+      {/* Navbar Header */}
+      <header className="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          {/* Logo & Brand */}
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/20">
+              <Zap className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-sm font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400 tracking-tight">
+                GONotification_Engine
+              </h1>
+              <p className="text-[10px] text-slate-400 font-mono">v2.0 • Go + NATS JetStream + WS</p>
+            </div>
+          </div>
 
-      <div className="ticks"></div>
+          {/* Center Nav Tabs */}
+          <nav className="hidden md:flex items-center gap-1 p-1 rounded-xl bg-slate-900/90 border border-slate-800">
+            <button
+              onClick={() => setActiveTab('sandbox')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                activeTab === 'sandbox'
+                  ? 'bg-indigo-600 text-white shadow-md'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Radio className="w-3.5 h-3.5" />
+              Multi-Client Sandbox
+            </button>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+            <button
+              onClick={() => setActiveTab('dispatch')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                activeTab === 'dispatch'
+                  ? 'bg-indigo-600 text-white shadow-md'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Send className="w-3.5 h-3.5" />
+              Dispatch API Form
+            </button>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+            <button
+              onClick={() => setActiveTab('history')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                activeTab === 'history'
+                  ? 'bg-indigo-600 text-white shadow-md'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <History className="w-3.5 h-3.5" />
+              Audit History
+            </button>
+          </nav>
+
+          {/* Right User Bar & Bell */}
+          <div className="flex items-center gap-3">
+            {/* User ID Selector */}
+            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-900 border border-slate-800 text-xs">
+              <span className="text-[10px] text-slate-500 font-mono">User:</span>
+              <input
+                type="text"
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
+                className="w-24 bg-transparent text-slate-200 font-mono text-xs focus:outline-none"
+              />
+            </div>
+
+            {/* Notification Bell Popover */}
+            <NotificationBell />
+          </div>
+        </div>
+
+        {/* Mobile Nav Bar */}
+        <div className="md:hidden flex justify-around border-t border-slate-800/60 py-2 bg-slate-950">
+          <button
+            onClick={() => setActiveTab('sandbox')}
+            className={`text-xs font-medium px-3 py-1 rounded-lg ${
+              activeTab === 'sandbox' ? 'bg-indigo-600 text-white' : 'text-slate-400'
+            }`}
+          >
+            Sandbox
+          </button>
+          <button
+            onClick={() => setActiveTab('dispatch')}
+            className={`text-xs font-medium px-3 py-1 rounded-lg ${
+              activeTab === 'dispatch' ? 'bg-indigo-600 text-white' : 'text-slate-400'
+            }`}
+          >
+            Dispatch
+          </button>
+          <button
+            onClick={() => setActiveTab('history')}
+            className={`text-xs font-medium px-3 py-1 rounded-lg ${
+              activeTab === 'history' ? 'bg-indigo-600 text-white' : 'text-slate-400'
+            }`}
+          >
+            History
+          </button>
+        </div>
+      </header>
+
+      {/* Main Container */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {activeTab === 'sandbox' && <MultiClientSandbox />}
+        {activeTab === 'dispatch' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-1">
+              <BroadcastForm />
+            </div>
+            <div className="lg:col-span-2">
+              <NotificationList />
+            </div>
+          </div>
+        )}
+        {activeTab === 'history' && <NotificationList />}
+      </main>
+
+      {/* System Specs Footer */}
+      <footer className="border-t border-slate-900 bg-slate-950/60 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-slate-500">
+          <div className="flex items-center gap-4">
+            <span className="flex items-center gap-1.5">
+              <Server className="w-3.5 h-3.5 text-indigo-400" /> Go 1.22 Server
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Cpu className="w-3.5 h-3.5 text-purple-400" /> NATS JetStream Broker
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Database className="w-3.5 h-3.5 text-emerald-400" /> PostgreSQL 16
+            </span>
+          </div>
+
+          <p>© 2026 GONotification_Engine • Real-Time Multi-Node WebSocket Tier</p>
+        </div>
+      </footer>
+
+      {/* Toast Alert Popups */}
+      <ToastContainer />
+    </div>
+  );
+};
+
+export default function App() {
+  return (
+    <NotificationProvider>
+      <DashboardContent />
+    </NotificationProvider>
+  );
 }
-
-export default App
