@@ -30,7 +30,7 @@ func Load() (*Config, error) {
 	cfg := &Config{
 		APIPort:          getEnv("API_PORT", "8080"),
 		WSMaxConnections: getEnvInt("WS_MAX_CONNECTIONS", 100000),
-		DatabaseURL:      getEnv("DATABASE_URL", "postgres://user:pass@127.0.0.1:5432/notifications?sslmode=disable"),
+		DatabaseURL:      getEnv("DATABASE_URL", "postgres://user:pass@127.0.0.1:5435/notifications?sslmode=disable"),
 		NATSURL:          getEnv("NATS_URL", "nats://127.0.0.1:4222"),
 		JWTSecret:        getEnv("JWT_SECRET", "change-me-in-production-super-secret-key-32-bytes"),
 		LogLevel:         getEnv("LOG_LEVEL", "info"),
