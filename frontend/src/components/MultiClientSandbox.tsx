@@ -59,10 +59,52 @@ export const MultiClientSandbox: React.FC = () => {
       };
       await sendNotification(req);
     } catch (err) {
-      console.error(err);
+      console.error('Dispatch API error:', err);
     } finally {
       setIsSending(false);
     }
+  };
+
+  // Handle Send from Client A Frame (Always clickable!)
+  const handleSendA = async () => {
+    if (!messageA.trim()) return;
+
+    // If client A is not connected yet, automatically initiate connection!
+    if (!clientA.isConnected) {
+      clientA.connect();
+    }
+
+    // Try sending direct WebSocket message frame
+    clientA.sendMessage({
+      action: 'ping',
+      sender: idClientA,
+      payload: messageA,
+      timestamp: new Date().toLocaleTimeString(),
+    });
+
+    // Dispatch REST API notification targeted to Client A for complete end-to-end verification
+    await handleDispatchAPI('user', [idClientA]);
+  };
+
+  // Handle Send from Client B Frame (Always clickable!)
+  const handleSendB = async () => {
+    if (!messageB.trim()) return;
+
+    // If client B is not connected yet, automatically initiate connection!
+    if (!clientB.isConnected) {
+      clientB.connect();
+    }
+
+    // Try sending direct WebSocket message frame
+    clientB.sendMessage({
+      action: 'ping',
+      sender: idClientB,
+      payload: messageB,
+      timestamp: new Date().toLocaleTimeString(),
+    });
+
+    // Dispatch REST API notification targeted to Client B for complete end-to-end verification
+    await handleDispatchAPI('user', [idClientB]);
   };
 
   const getStatusBadge = (status: string) => {
@@ -162,7 +204,7 @@ export const MultiClientSandbox: React.FC = () => {
           <button
             onClick={() => handleDispatchAPI('all', [])}
             disabled={isSending}
-            className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-xs font-semibold text-white shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-1.5 disabled:opacity-50"
+            className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-xs font-semibold text-white shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
           >
             <Radio className="w-3.5 h-3.5" />
             Broadcast to ALL Clients
@@ -171,7 +213,7 @@ export const MultiClientSandbox: React.FC = () => {
           <button
             onClick={() => handleDispatchAPI('user', [idClientA])}
             disabled={isSending}
-            className="px-4 py-2 rounded-xl bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 border border-blue-500/30 text-xs font-semibold transition-all flex items-center gap-1.5 disabled:opacity-50"
+            className="px-4 py-2 rounded-xl bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 border border-blue-500/30 text-xs font-semibold transition-all flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
           >
             <Send className="w-3.5 h-3.5" />
             Target Only Client A ({idClientA})
@@ -180,7 +222,7 @@ export const MultiClientSandbox: React.FC = () => {
           <button
             onClick={() => handleDispatchAPI('user', [idClientB])}
             disabled={isSending}
-            className="px-4 py-2 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/30 text-xs font-semibold transition-all flex items-center gap-1.5 disabled:opacity-50"
+            className="px-4 py-2 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/30 text-xs font-semibold transition-all flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
           >
             <Send className="w-3.5 h-3.5" />
             Target Only Client B ({idClientB})
@@ -218,7 +260,7 @@ export const MultiClientSandbox: React.FC = () => {
                 {clientA.isConnected ? (
                   <button
                     onClick={clientA.disconnect}
-                    className="flex-1 px-3 py-2 rounded-xl bg-rose-600/20 hover:bg-rose-600/40 text-rose-300 border border-rose-500/30 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
+                    className="flex-1 px-3 py-2 rounded-xl bg-rose-600/20 hover:bg-rose-600/40 text-rose-300 border border-rose-500/30 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <Square className="w-3.5 h-3.5" />
                     Đóng Kết Nối Client A
@@ -226,7 +268,7 @@ export const MultiClientSandbox: React.FC = () => {
                 ) : (
                   <button
                     onClick={clientA.connect}
-                    className="flex-1 px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-1.5"
+                    className="flex-1 px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <Play className="w-3.5 h-3.5" />
                     Mở Kết Nối Client A
@@ -234,7 +276,7 @@ export const MultiClientSandbox: React.FC = () => {
                 )}
                 <button
                   onClick={clientA.clearLogs}
-                  className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 transition-colors"
+                  className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
                   title="Clear Console Logs"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -256,10 +298,11 @@ export const MultiClientSandbox: React.FC = () => {
                   className="flex-1 px-3 py-1.5 text-xs rounded-lg bg-slate-900 border border-slate-800 text-slate-200 focus:outline-none"
                 />
                 <button
-                  onClick={() => clientA.sendMessage({ action: 'ping', payload: messageA })}
-                  disabled={!clientA.isConnected}
-                  className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-medium disabled:opacity-40"
+                  onClick={handleSendA}
+                  disabled={isSending}
+                  className="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md transition-all flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
                 >
+                  <Send className="w-3.5 h-3.5" />
                   Gửi
                 </button>
               </div>
@@ -330,7 +373,7 @@ export const MultiClientSandbox: React.FC = () => {
                 {clientB.isConnected ? (
                   <button
                     onClick={clientB.disconnect}
-                    className="flex-1 px-3 py-2 rounded-xl bg-rose-600/20 hover:bg-rose-600/40 text-rose-300 border border-rose-500/30 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
+                    className="flex-1 px-3 py-2 rounded-xl bg-rose-600/20 hover:bg-rose-600/40 text-rose-300 border border-rose-500/30 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <Square className="w-3.5 h-3.5" />
                     Đóng Kết Nối Client B
@@ -338,7 +381,7 @@ export const MultiClientSandbox: React.FC = () => {
                 ) : (
                   <button
                     onClick={clientB.connect}
-                    className="flex-1 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-1.5"
+                    className="flex-1 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <Play className="w-3.5 h-3.5" />
                     Mở Kết Nối Client B
@@ -346,7 +389,7 @@ export const MultiClientSandbox: React.FC = () => {
                 )}
                 <button
                   onClick={clientB.clearLogs}
-                  className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 transition-colors"
+                  className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
                   title="Clear Console Logs"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -368,10 +411,11 @@ export const MultiClientSandbox: React.FC = () => {
                   className="flex-1 px-3 py-1.5 text-xs rounded-lg bg-slate-900 border border-slate-800 text-slate-200 focus:outline-none"
                 />
                 <button
-                  onClick={() => clientB.sendMessage({ action: 'ping', payload: messageB })}
-                  disabled={!clientB.isConnected}
-                  className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-medium disabled:opacity-40"
+                  onClick={handleSendB}
+                  disabled={isSending}
+                  className="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-md transition-all flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
                 >
+                  <Send className="w-3.5 h-3.5" />
                   Gửi
                 </button>
               </div>
