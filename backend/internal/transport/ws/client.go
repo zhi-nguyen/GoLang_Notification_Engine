@@ -79,9 +79,19 @@ func (c *Client) ReadPump() {
 			}
 			break
 		}
-		// Clean / normalize incoming payload if needed (currently client messages logged or ignored)
+		// Clean / normalize incoming payload
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		log.Trace().Str("user_id", c.userID).Int("len", len(message)).Msg("Received WebSocket client message")
+		if len(message) == 0 {
+			continue
+		}
+
+		log.Info().
+			Str("user_id", c.userID).
+			Int("len", len(message)).
+			Msg("Received WebSocket client message; broadcasting to Hub")
+
+		// Broadcast incoming client message to all connected clients on the Hub
+		c.hub.Broadcast(message)
 	}
 }
 
