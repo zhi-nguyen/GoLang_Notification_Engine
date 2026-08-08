@@ -2,21 +2,18 @@ import React, { useState } from 'react';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { useNotificationContext } from '../context/NotificationContext';
 import {
-  Activity,
   Play,
   Square,
   Send,
   Zap,
   Radio,
-  Users,
   CheckCircle2,
   XCircle,
   Clock,
   Terminal,
   Trash2,
-  Plus,
 } from 'lucide-react';
-import { SendNotificationRequest } from '../types';
+import type { SendNotificationRequest } from '../types';
 
 export const MultiClientSandbox: React.FC = () => {
   const { token, sendNotification } = useNotificationContext();

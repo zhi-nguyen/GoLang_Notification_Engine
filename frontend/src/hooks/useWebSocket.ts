@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { NotificationItem } from '../types';
+import type { NotificationItem } from '../types';
 
 export type ConnectionStatus =
   | 'DISCONNECTED'
@@ -105,7 +105,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
       // Handled by onclose
     };
 
-    ws.onclose = (event) => {
+    ws.onclose = () => {
       socketRef.current = null;
 
       if (isManuallyClosedRef.current) {

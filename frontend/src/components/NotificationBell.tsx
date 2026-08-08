@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNotificationContext } from '../context/NotificationContext';
 import { Bell, CheckCheck, Mail, MessageSquare, Smartphone, Zap } from 'lucide-react';
-import { NotificationType } from '../types';
+import type { NotificationType } from '../types';
 
 export const NotificationBell: React.FC = () => {
   const { notifications, unreadCount, markAllAsRead, markAsRead, wsStatus } =

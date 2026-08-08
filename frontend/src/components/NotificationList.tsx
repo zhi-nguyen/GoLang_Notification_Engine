@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNotificationContext } from '../context/NotificationContext';
-import { NotificationItem, NotificationType } from '../types';
+import type { NotificationType } from '../types';
 import { Mail, MessageSquare, Smartphone, Zap, RefreshCw, Filter } from 'lucide-react';
 
 export const NotificationList: React.FC = () => {

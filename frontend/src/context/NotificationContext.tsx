@@ -1,11 +1,12 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import {
+import type {
   NotificationItem,
   NotificationStats,
   SendNotificationRequest,
 } from '../types';
 import { apiService } from '../services/api';
-import { useWebSocket, ConnectionStatus } from '../hooks/useWebSocket';
+import { useWebSocket } from '../hooks/useWebSocket';
+import type { ConnectionStatus } from '../hooks/useWebSocket';
 
 export interface ToastItem {
   id: string;

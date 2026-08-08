@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNotificationContext } from '../context/NotificationContext';
-import { SendNotificationRequest, NotificationType, TargetType } from '../types';
-import { Send, Mail, MessageSquare, Smartphone, Zap, Users, ShieldAlert } from 'lucide-react';
+import type { SendNotificationRequest, NotificationType, TargetType } from '../types';
+import { Send, Mail, MessageSquare, Smartphone } from 'lucide-react';
 
 export const BroadcastForm: React.FC = () => {
   const { sendNotification } = useNotificationContext();
