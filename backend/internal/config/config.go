@@ -1,9 +1,12 @@
 package config
 
 import (
+	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 )
 
 type Config struct {
@@ -19,11 +22,16 @@ type Config struct {
 }
 
 func Load() (*Config, error) {
+	// Attempt to load .env file from root or backend directory if present
+	loadDotEnv(".env")
+	loadDotEnv("../.env")
+	loadDotEnv("../../.env")
+
 	cfg := &Config{
 		APIPort:          getEnv("API_PORT", "8080"),
 		WSMaxConnections: getEnvInt("WS_MAX_CONNECTIONS", 100000),
-		DatabaseURL:      getEnv("DATABASE_URL", "postgres://user:pass@localhost:5432/notifications?sslmode=disable"),
-		NATSURL:          getEnv("NATS_URL", "nats://localhost:4222"),
+		DatabaseURL:      getEnv("DATABASE_URL", "postgres://user:pass@127.0.0.1:5435/notifications?sslmode=disable"),
+		NATSURL:          getEnv("NATS_URL", "nats://127.0.0.1:4222"),
 		JWTSecret:        getEnv("JWT_SECRET", "change-me-in-production-super-secret-key-32-bytes"),
 		LogLevel:         getEnv("LOG_LEVEL", "info"),
 		EmailProvider:    getEnv("EMAIL_PROVIDER", "mock"),
@@ -52,6 +60,34 @@ func (c *Config) Validate() error {
 		return fmt.Errorf("NATS_URL must not be empty")
 	}
 	return nil
+}
+
+func loadDotEnv(filename string) {
+	absPath, err := filepath.Abs(filename)
+	if err != nil {
+		return
+	}
+	file, err := os.Open(absPath)
+	if err != nil {
+		return
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		parts := strings.SplitN(line, "=", 2)
+		if len(parts) == 2 {
+			key := strings.TrimSpace(parts[0])
+			val := strings.TrimSpace(parts[1])
+			if os.Getenv(key) == "" {
+				_ = os.Setenv(key, val)
+			}
+		}
+	}
 }
 
 func getEnv(key, fallback string) string {

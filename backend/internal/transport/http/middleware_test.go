@@ -101,3 +101,22 @@ func TestJWTAuthMiddleware(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rr4.Code)
 	assert.Contains(t, rr4.Body.String(), "user-123")
 }
+
+func TestResponseWriter_HijackerSupport(t *testing.T) {
+	var isHijacker bool
+	var isFlusher bool
+
+	nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, isHijacker = w.(http.Hijacker)
+		_, isFlusher = w.(http.Flusher)
+		w.WriteHeader(http.StatusOK)
+	})
+
+	handler := LoggerMiddleware(nextHandler)
+	req := httptest.NewRequest(http.MethodGet, "/ws", nil)
+	rr := httptest.NewRecorder()
+	handler.ServeHTTP(rr, req)
+
+	assert.True(t, isHijacker, "responseWriter must implement http.Hijacker for WebSocket upgrade support")
+	assert.True(t, isFlusher, "responseWriter must implement http.Flusher")
+}
