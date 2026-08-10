@@ -1,7 +1,26 @@
 import React, { useState } from 'react';
 import { useNotificationContext } from '../context/NotificationContext';
 import type { SendNotificationRequest, NotificationType, TargetType } from '../types';
-import { Send, Mail, MessageSquare, Smartphone } from 'lucide-react';
+import { PaperAirplaneSolid } from './Icons';
+
+const NOTIFICATION_TYPES: { value: NotificationType; label: string }[] = [
+  { value: 'app_alert', label: 'App Alert' },
+  { value: 'push', label: 'Push Notification' },
+  { value: 'email', label: 'Email Digest' },
+  { value: 'sms', label: 'SMS OTP' },
+];
+
+const TARGET_TYPES: { value: TargetType; label: string }[] = [
+  { value: 'all', label: 'Broadcast to All Users' },
+  { value: 'user', label: 'Specific User IDs' },
+  { value: 'segment', label: 'User Segment' },
+];
+
+const CHANNEL_OPTIONS = [
+  { key: 'email', label: 'Email Worker' },
+  { key: 'sms', label: 'SMS Worker' },
+  { key: 'push', label: 'Push Worker' },
+];
 
 export const BroadcastForm: React.FC = () => {
   const { sendNotification } = useNotificationContext();
@@ -59,14 +78,13 @@ export const BroadcastForm: React.FC = () => {
   };
 
   return (
-    <div className="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl backdrop-blur-xl">
-      <h2 className="text-base font-bold text-slate-100 mb-4 flex items-center gap-2">
-        <Send className="w-4 h-4 text-indigo-400" />
+    <div className="p-5 rounded-lg bg-white border border-[#e0e0e0] shadow-sm">
+      <h2 className="text-sm font-bold text-[#1b1b1b] mb-4">
         Dispatch Notification Payload
       </h2>
 
       {successMsg && (
-        <div className="mb-4 p-3 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-medium animate-in fade-in">
+        <div className="mb-4 p-3 rounded-md bg-[#49cc90]/10 border border-[#49cc90]/40 text-[#2d8a5e] text-xs font-medium">
           {successMsg}
         </div>
       )}
@@ -74,8 +92,8 @@ export const BroadcastForm: React.FC = () => {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Title */}
         <div>
-          <label className="text-xs font-semibold text-slate-300 block mb-1.5">
-            Title <span className="text-rose-400">*</span>
+          <label className="text-xs font-semibold text-[#3b4151] block mb-1.5">
+            Title <span className="text-[#f93e3e]">*</span>
           </label>
           <input
             type="text"
@@ -83,14 +101,14 @@ export const BroadcastForm: React.FC = () => {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g. Flash Sale 50% Off"
-            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-indigo-500 transition-colors"
+            className="w-full px-3 py-2 rounded-md bg-white border border-[#d1d5db] text-[#3b4151] text-xs focus:outline-none focus:border-[#4990e2] focus:ring-1 focus:ring-[#4990e2]/30 transition-colors"
           />
         </div>
 
         {/* Body */}
         <div>
-          <label className="text-xs font-semibold text-slate-300 block mb-1.5">
-            Message Body <span className="text-rose-400">*</span>
+          <label className="text-xs font-semibold text-[#3b4151] block mb-1.5">
+            Message Body <span className="text-[#f93e3e]">*</span>
           </label>
           <textarea
             required
@@ -98,36 +116,35 @@ export const BroadcastForm: React.FC = () => {
             value={body}
             onChange={(e) => setBody(e.target.value)}
             placeholder="Enter notification message content..."
-            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-indigo-500 transition-colors resize-none"
+            className="w-full px-3 py-2 rounded-md bg-white border border-[#d1d5db] text-[#3b4151] text-xs focus:outline-none focus:border-[#4990e2] focus:ring-1 focus:ring-[#4990e2]/30 transition-colors resize-none"
           />
         </div>
 
         {/* Notification Type & Target Type */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="text-xs font-semibold text-slate-300 block mb-1.5">Category Type</label>
+            <label className="text-xs font-semibold text-[#3b4151] block mb-1.5">Category Type</label>
             <select
               value={type}
               onChange={(e) => setType(e.target.value as NotificationType)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-indigo-500"
+              className="w-full px-3 py-2 rounded-md bg-white border border-[#d1d5db] text-[#3b4151] text-xs focus:outline-none focus:border-[#4990e2]"
             >
-              <option value="app_alert">App Alert</option>
-              <option value="push">Push Notification</option>
-              <option value="email">Email Digest</option>
-              <option value="sms">SMS OTP</option>
+              {NOTIFICATION_TYPES.map((t) => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
             </select>
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-300 block mb-1.5">Target Scope</label>
+            <label className="text-xs font-semibold text-[#3b4151] block mb-1.5">Target Scope</label>
             <select
               value={targetType}
               onChange={(e) => setTargetType(e.target.value as TargetType)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-indigo-500"
+              className="w-full px-3 py-2 rounded-md bg-white border border-[#d1d5db] text-[#3b4151] text-xs focus:outline-none focus:border-[#4990e2]"
             >
-              <option value="all">Broadcast to All Users</option>
-              <option value="user">Specific User IDs</option>
-              <option value="segment">User Segment</option>
+              {TARGET_TYPES.map((t) => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
             </select>
           </div>
         </div>
@@ -135,7 +152,7 @@ export const BroadcastForm: React.FC = () => {
         {/* Target IDs (Conditional) */}
         {targetType !== 'all' && (
           <div>
-            <label className="text-xs font-semibold text-slate-300 block mb-1.5">
+            <label className="text-xs font-semibold text-[#3b4151] block mb-1.5">
               Target User IDs (comma-separated)
             </label>
             <input
@@ -143,46 +160,28 @@ export const BroadcastForm: React.FC = () => {
               value={targetIds}
               onChange={(e) => setTargetIds(e.target.value)}
               placeholder="e.g. client_A, client_B, usr_100"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 text-xs font-mono focus:outline-none focus:border-indigo-500"
+              className="w-full px-3 py-2 rounded-md bg-white border border-[#d1d5db] text-[#3b4151] text-xs font-mono focus:outline-none focus:border-[#4990e2]"
             />
           </div>
         )}
 
         {/* Async Channel Workers */}
         <div>
-          <label className="text-xs font-semibold text-slate-300 block mb-2">
+          <label className="text-xs font-semibold text-[#3b4151] block mb-2">
             Async Delivery Channels (JetStream Workers)
           </label>
           <div className="flex gap-4">
-            <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={channels.email}
-                onChange={(e) => setChannels({ ...channels, email: e.target.checked })}
-                className="rounded bg-slate-950 border-slate-800 text-indigo-600 focus:ring-0"
-              />
-              <Mail className="w-3.5 h-3.5 text-blue-400" /> Email Worker
-            </label>
-
-            <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={channels.sms}
-                onChange={(e) => setChannels({ ...channels, sms: e.target.checked })}
-                className="rounded bg-slate-950 border-slate-800 text-indigo-600 focus:ring-0"
-              />
-              <MessageSquare className="w-3.5 h-3.5 text-emerald-400" /> SMS Worker
-            </label>
-
-            <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={channels.push}
-                onChange={(e) => setChannels({ ...channels, push: e.target.checked })}
-                className="rounded bg-slate-950 border-slate-800 text-indigo-600 focus:ring-0"
-              />
-              <Smartphone className="w-3.5 h-3.5 text-purple-400" /> Push Worker
-            </label>
+            {CHANNEL_OPTIONS.map((ch) => (
+              <label key={ch.key} className="flex items-center gap-2 text-xs text-[#3b4151] cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={channels[ch.key]}
+                  onChange={(e) => setChannels({ ...channels, [ch.key]: e.target.checked })}
+                  className="rounded border-[#d1d5db] text-[#4990e2] focus:ring-[#4990e2]/30 accent-[#4990e2]"
+                />
+                {ch.label}
+              </label>
+            ))}
           </div>
         </div>
 
@@ -190,9 +189,9 @@ export const BroadcastForm: React.FC = () => {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-xs shadow-lg shadow-indigo-500/25 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+          className="w-full py-2.5 rounded-md bg-[#4990e2] hover:bg-[#3d7bc7] text-white font-semibold text-xs shadow-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
         >
-          <Send className="w-4 h-4" />
+          <PaperAirplaneSolid className="w-3.5 h-3.5" />
           {isSubmitting ? 'Dispatching Payload...' : 'Send Notification'}
         </button>
       </form>
